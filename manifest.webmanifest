@@ -1,0 +1,11 @@
+{
+  "name": "SIMONIK-LG · UPTD Puskesmas Kota",
+  "short_name": "SIMONIK-LG",
+  "description": "Monitoring kegiatan luar gedung UPTD Puskesmas Kota, Kec. Aesesa",
+  "start_url": "./#/app",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F7F5",
+  "theme_color": "#15803D",
+  "icons": [{ "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

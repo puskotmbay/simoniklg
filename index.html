@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#15803D">
+  <meta name="description" content="SIMONIK-LG — Sistem Monitoring Kegiatan Luar Gedung UPTD Puskesmas Kota, Kecamatan Aesesa.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.tile.openstreetmap.org; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://cdn.jsdelivr.net; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>SIMONIK-LG · UPTD Puskesmas Kota</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <!-- Tema diterapkan sebelum tampilan dilukis agar tidak berkedip -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('simonik_theme');
+        if (!t) t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.googleusercontent.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ============ LAYAR MUAT AWAL ============ -->
+  <div id="boot" class="boot" role="status" aria-live="polite">
+    <div class="boot-inner">
+      <div class="logo-tile" style="width:56px;height:56px;border-radius:16px"><i class="bi bi-geo-alt-fill" style="font-size:26px"></i></div>
+      <div class="brand-name">SIMONIK-LG</div>
+      <div class="boot-bar"></div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN PUBLIK (landing.js) ============ -->
+  <div id="screen-landing" hidden></div>
+  <div id="screen-cek" hidden></div>
+  <div id="screen-darurat" hidden></div>
+
+  <!-- ============ LOGIN (W-01) ============ -->
+  <div id="screen-login" class="login-screen" hidden>
+    <form class="login-card" id="formLogin" autocomplete="on" novalidate>
+      <div class="login-logos" id="loginLogos">
+        <div class="lg"><i class="bi bi-bank"></i></div>
+        <div class="lg"><i class="bi bi-hospital"></i></div>
+      </div>
+      <h1>SIMONIK-LG</h1>
+      <p class="sub">Monitoring Kegiatan Luar Gedung<br><span id="loginInstansi">UPTD Puskesmas Kota · Kec. Aesesa</span></p>
+
+      <div class="stack-16 mt-24">
+        <div class="field">
+          <label for="lgUser">Username / NIP / Email</label>
+          <div class="input-icon">
+            <i class="bi bi-person"></i>
+            <input class="input" id="lgUser" name="username" autocomplete="username" placeholder="Masukkan NIP atau username" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="lgPass">Kata Sandi</label>
+          <div class="input-icon">
+            <i class="bi bi-lock"></i>
+            <input class="input" id="lgPass" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required style="padding-right:52px">
+            <button type="button" class="icon-btn suffix" id="lgEye" aria-label="Tampilkan kata sandi"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="lgRemember" checked> Tetap masuk di perangkat ini</label>
+        <div id="lgError" class="alert danger" hidden><i class="bi bi-shield-exclamation"></i><span></span></div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" id="lgBtn">Masuk <i class="bi bi-arrow-right"></i></button>
+        <p class="text-sm muted" style="text-align:center">Lupa kata sandi? Hubungi Admin Puskesmas.</p>
+        <a class="btn btn-ghost btn-block" href="#/"><i class="bi bi-arrow-left"></i> Halaman utama</a>
+      </div>
+      <p class="login-foot">© 2026 UPTD Puskesmas Kota · v2.0</p>
+    </form>
+  </div>
+
+  <!-- ============ APLIKASI (SPA) ============ -->
+  <div id="app" class="app" hidden>
+    <!-- Sidebar staf (Kapus/Admin) -->
+    <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+      <div class="sidebar-head">
+        <div class="logo-tile" id="sideLogo"><i class="bi bi-geo-alt-fill"></i></div>
+        <div><div class="t1">SIMONIK-LG</div><div class="t2" id="sideInstansi">UPTD Puskesmas Kota</div></div>
+      </div>
+      <nav class="sidebar-nav" id="sideNav"></nav>
+      <div class="sidebar-foot">
+        <div class="side-user" id="sideUser"></div>
+        <button class="side-link" data-action="theme"><i class="bi bi-moon-stars"></i><span>Mode Gelap</span></button>
+        <button class="side-link logout" data-action="logout"><i class="bi bi-box-arrow-left"></i><span>Keluar</span></button>
+      </div>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+
+    <div class="main">
+      <header class="topbar" id="topbar">
+        <div class="topbar-inner">
+          <button class="icon-btn back" data-action="back" aria-label="Kembali"><i class="bi bi-arrow-left"></i></button>
+          <button class="icon-btn menu-btn" data-action="menu" aria-label="Menu" id="menuBtn" hidden><i class="bi bi-list"></i></button>
+          <div class="brand" id="topBrand">
+            <div class="logo-tile" id="topLogo"><i class="bi bi-geo-alt-fill"></i></div>
+            <div class="grow"><div class="brand-name" id="topTitle">SIMONIK-LG</div><div class="brand-sub" id="topSub">UPTD Puskesmas Kota</div></div>
+          </div>
+          <h2 class="page-title" id="pageTitle">Dashboard</h2>
+          <div class="actions">
+            <button class="icon-btn" data-action="theme" aria-label="Ganti tema terang/gelap"><i class="bi bi-moon"></i></button>
+            <button class="icon-btn" data-action="sync" aria-label="Sinkronkan sekarang" id="syncBtn"><i class="bi bi-arrow-repeat"></i><span class="dot"></span></button>
+            <button class="avatar" data-go="akun" id="topAvatar" aria-label="Akun saya">?</button>
+          </div>
+        </div>
+      </header>
+      <div class="statusbar" id="statusbar" role="status" aria-live="polite">
+        <div class="left"><span class="dot"></span><span id="statusText">Online</span></div>
+        <span id="statusPage">Beranda</span>
+      </div>
+
+      <main class="content" id="content">
+        <!-- Pegawai -->
+        <section class="page" id="pg-beranda"></section>
+        <section class="page" id="pg-mulai"></section>
+        <section class="page" id="pg-selesai"></section>
+        <section class="page" id="pg-riwayat"></section>
+        <section class="page" id="pg-detail"></section>
+        <section class="page" id="pg-antrean"></section>
+        <section class="page" id="pg-laporan"></section>
+        <section class="page" id="pg-akun"></section>
+        <!-- Kapus & Admin -->
+        <section class="page" id="pg-dashboard"></section>
+        <section class="page" id="pg-data"></section>
+        <section class="page" id="pg-verifikasi"></section>
+        <section class="page" id="pg-peta"></section>
+        <section class="page" id="pg-pegawai"></section>
+        <section class="page" id="pg-master"></section>
+        <section class="page" id="pg-pengaturan"></section>
+        <section class="page" id="pg-log"></section>
+        <!-- v2 -->
+        <section class="page" id="pg-notifikasi"></section>
+        <section class="page" id="pg-crm"></section>
+        <section class="page" id="pg-dokumen"></section>
+        <section class="page" id="pg-migrasi"></section>
+        <section class="page" id="pg-keamanan"></section>
+      </main>
+    </div>
+
+    <nav class="bottomnav" id="bottomnav" aria-label="Navigasi bawah"><div class="bottomnav-inner" id="bottomnavInner"></div></nav>
+    <div class="sticky-actions" id="stickyActions" hidden><div class="inner" id="stickyInner"></div></div>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div class="toasts" id="toasts" aria-live="assertive"></div>
+
+  <!-- Input berkas tersembunyi (kamera & berkas) -->
+  <input type="file" id="inCamera" accept="image/*" capture="environment" hidden>
+  <input type="file" id="inFile" multiple hidden>
+  <input type="file" id="inLogo" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+
+  <script src="js/config.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/landing.js"></script>
+</body>
+</html>
